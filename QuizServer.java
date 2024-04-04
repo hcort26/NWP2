@@ -26,7 +26,7 @@ class QuizServer {
     public static void main(String[] args) {
         questionList = new ArrayList<>();
         try {
-            loadQuestionsFromFile("qAndA.txt");
+            loadQuestionsFromFile("QA.txt");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
