@@ -16,14 +16,18 @@ import java.util.Scanner;
 
 class QuizServer {
     private static final int serverPort = 12345;
-    private static List<QuestionAndAnswer> questionList;
-    private static int currentQuestion = 0;
-    private static boolean acceptingBuzzes = true;
-    private static List<ParticipantConnection> participants = new ArrayList<>();
     public static int countTimeouts = 0;
     private static boolean displayedWinners = false;
+    private static int currentQuestion = 0;
+    private static boolean acceptingBuzzes = true;
+    
+    private static List<QuestionAndAnswer> questionList;
+    private static List<ParticipantConnection> participants = new ArrayList<>();
+    
+    
 
     public static void main(String[] args) {
+    	
         questionList = new ArrayList<>();
         try {
             loadQuestionsFromFile("QA.txt");
@@ -32,7 +36,7 @@ class QuizServer {
         }
 
         try (ServerSocket serverSock = new ServerSocket(serverPort)) {
-            System.out.println("Server up and running. Awaiting connections...");
+            System.out.println("Server running. Awaiting connections...");
 
             BuzzListener buzzListener = new BuzzListener();
             buzzListener.start();
@@ -41,7 +45,7 @@ class QuizServer {
                 Socket clientSock = serverSock.accept();
                 ParticipantConnection newParticipant = new ParticipantConnection(clientSock);
                 participants.add(newParticipant);
-                System.out.println("Participant joined: " + clientSock.getRemoteSocketAddress().toString());
+                System.out.println("Client connected: " + clientSock.getRemoteSocketAddress().toString());
 
                 new Thread(() -> {
                     try {
@@ -60,9 +64,10 @@ class QuizServer {
     }
 
     private static class BuzzListener extends Thread {
-        private DatagramSocket ds;
-        private boolean active;
+    	
+    	private boolean active;
         private byte[] buffer = new byte[256];
+        private DatagramSocket ds;
 
         public BuzzListener() throws SocketException {
             this.ds = new DatagramSocket(serverPort);
@@ -81,7 +86,7 @@ class QuizServer {
                     if (acceptingBuzzes) {
                         acceptingBuzzes = false;
                         if (participants.isEmpty()) {
-                            System.out.println("No participants connected.");
+                            System.out.println("No clients connected.");
                         } else {
                             ParticipantConnection matchingParticipant = null;
                             for (ParticipantConnection pc : participants) {
@@ -91,16 +96,18 @@ class QuizServer {
                                 }
                             }
                             if (matchingParticipant != null) {
-                                System.out.println("Acknowledging buzz from " + address.getHostAddress());
+                                System.out.println("Buzz from " + address.getHostAddress());
                                 try {
-                                    matchingParticipant.broadcastMessage("ACK");
-                                    setParticipantTimer("10", matchingParticipant);
+                                	
+                                	setParticipantTimer("10", matchingParticipant);
                                     matchingParticipant.setEligibleToAnswer(true);
+                                    matchingParticipant.broadcastMessage("ACK");
+                                    
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
                             } else {
-                                System.out.println("No matching participant for " + address.getHostAddress());
+                                System.out.println("No matching client for " + address.getHostAddress());
                             }
                         }
                     } else {
@@ -131,27 +138,8 @@ class QuizServer {
         }
     }
 
-    public static void loadQuestionsFromFile(String filePath) throws FileNotFoundException {
-        File file = new File(filePath);
-        if (!file.exists()) throw new FileNotFoundException();
-
-        Scanner fileReader = new Scanner(file);
-        while (fileReader.hasNextLine()) {
-            String q = fileReader.nextLine();
-            if (!q.isEmpty()) {
-                List<String> options = new ArrayList<>();
-                options.add(fileReader.nextLine());
-                options.add(fileReader.nextLine());
-                options.add(fileReader.nextLine());
-                options.add(fileReader.nextLine());
-                String correctAns = fileReader.nextLine();
-                questionList.add(new QuestionAndAnswer(q, options, correctAns));
-            }
-        }
-        fileReader.close();
-    }
-
     private static void notifyParticipantOfCurrentQuestion(ParticipantConnection pc) throws IOException {
+    	
         if (currentQuestion < questionList.size()) {
             setParticipantTimer("15", pc);
             QuestionAndAnswer currentQA = questionList.get(currentQuestion);
@@ -178,7 +166,20 @@ class QuizServer {
         }
     }
 
+    public static void announceWinners() {
+
+        Collections.sort(participants);
+        System.out.println("Winner:");
+        System.out.println(participants.get(0).getParticipantID() + " with points: " + participants.get(0).getPoints());
+
+        System.out.println("Final Points:");
+        for (ParticipantConnection pc : participants) {
+            System.out.println(pc.getParticipantID() + ": " + pc.getPoints());
+        }
+    }
+    
     public static void advanceAllToNextQuestion() throws IOException {
+    	
         countTimeouts = 0;
         triggerTimersForAllParticipants("15");
         acceptingBuzzes = true;
@@ -191,21 +192,8 @@ class QuizServer {
         }
     }
 
-    public static synchronized void removeParticipant(ParticipantConnection pc) {
-        participants.remove(pc);
-    }
-
-    public static void triggerTimersForAllParticipants(String time) throws IOException {
-        for (ParticipantConnection pc : participants) {
-            try {
-                pc.broadcastMessage("Time " + time);
-            } catch (Exception e) {
-                System.out.println(pc.getConnection() + " has closed");
-            }
-        }
-    }
-
     public static void setParticipantTimer(String time, ParticipantConnection pc) throws IOException {
+    	
         try {
             pc.broadcastMessage("Time " + time);
         } catch (Exception e) {
@@ -214,6 +202,7 @@ class QuizServer {
     }
 
     public static synchronized void notifyTimeout(ParticipantConnection pc) {
+    	
         countTimeouts++;
         if (countTimeouts >= participants.size()) {
             System.out.println("All participants timed out");
@@ -233,20 +222,41 @@ class QuizServer {
             }
         }
     }
+    
+    public static synchronized void removeParticipant(ParticipantConnection pc) {
+        participants.remove(pc);
+    }
 
-    public static void announceWinners() {
-        if (participants.isEmpty()) {
-            System.out.println("No participants in the quiz.");
-            return;
-        }
-        Collections.sort(participants);
-        System.out.println("Winner:");
-        System.out.println(participants.get(0).getParticipantID() + " with points: " + participants.get(0).getPoints());
-
-        System.out.println("Final Points:");
+    public static void triggerTimersForAllParticipants(String time) throws IOException {
+    	
         for (ParticipantConnection pc : participants) {
-            System.out.println(pc.getParticipantID() + ": " + pc.getPoints());
+            try {
+                pc.broadcastMessage("Time " + time);
+            } catch (Exception e) {
+                System.out.println(pc.getConnection() + " has closed");
+            }
         }
+    }
+    
+    public static void loadQuestionsFromFile(String filePath) throws FileNotFoundException {
+    	
+        File file = new File(filePath);
+        if (!file.exists()) throw new FileNotFoundException();
+
+        Scanner fileReader = new Scanner(file);
+        while (fileReader.hasNextLine()) {
+            String q = fileReader.nextLine();
+            if (!q.isEmpty()) {
+                List<String> options = new ArrayList<>();
+                options.add(fileReader.nextLine());
+                options.add(fileReader.nextLine());
+                options.add(fileReader.nextLine());
+                options.add(fileReader.nextLine());
+                String correctAns = fileReader.nextLine();
+                questionList.add(new QuestionAndAnswer(q, options, correctAns));
+            }
+        }
+        fileReader.close();
     }
 }
 
