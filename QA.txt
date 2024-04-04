@@ -1,0 +1,140 @@
+1. What does JVM stand for?
+A) Java Virtual Machine
+B) Java Variable Method
+C) Just Virtual Machine
+D) Java Visual Medium
+A
+
+2. Which of these data types has the smallest size?
+A) int
+B) short
+C) long
+D) byte
+D
+
+3. What is the default value of a boolean variable in Java?
+A) 0
+B) false
+C) true
+D) null
+B
+
+4. Which keyword is used to inherit a class in Java?
+A) super
+B) this
+C) extend
+D) extends
+D
+
+5. What does the 'final' keyword in Java signify?
+A) Finally block
+B) Finalize method
+C) Constant variable
+D) Final class
+C
+
+6. What is the correct way to create an array in Java?
+A) int arr[] = new int[5];
+B) int arr[] = new int[];
+C) int arr[5];
+D) int arr = new int[5];
+A
+
+7. Which of these is not an access modifier in Java?
+A) protected
+B) public
+C) private
+D) friend
+D
+
+8. What is polymorphism in Java?
+A) Methods with the same name
+B) Different number of parameters in methods
+C) Different return types in methods
+D) All of the above
+D
+
+9. How do you declare a method in an interface?
+A) public abstract
+B) public
+C) abstract
+D) static
+A
+
+10. Which collection class allows you to grow or shrink its size and provides indexed access to its elements, but is not synchronized?
+A) HashSet
+B) LinkedHashMap
+C) ArrayList
+D) HashTable
+C
+
+11. In which memory area are instance variables stored?
+A) Stack
+B) String Pool
+C) Heap
+D) None of the above
+C
+
+12. What is the size of a char in Java?
+A) 8 bits
+B) 16 bits
+C) 32 bits
+D) 64 bits
+B
+
+13. What is the base class of all classes in Java?
+A) String
+B) Object
+C) Abstract
+D) None of the above
+B
+
+14. Which package contains the Random class?
+A) java.util
+B) java.lang
+C) java.system
+D) java.io
+A
+
+15. What is the output of: System.out.println(1 + 2 + "3");
+A) 6
+B) 33
+C) 123
+D) 12
+B
+
+16. What is the term for the process of converting a primitive type into an object?
+A) upcasting
+B) downcasting
+C) autoboxing
+D) unboxing
+C
+
+17. Which of these is not a loop structure in Java?
+A) for
+B) while
+C) do-while
+D) repeat-until
+D
+
+18. Which operator is used to check if an object is of a particular type?
+A) instanceof
+B) typeof
+C) Is
+D) None of the above
+A
+
+19. How do you start a thread in Java?
+A) start();
+B) run();
+C) execute();
+D) startThread();
+A
+
+20. What is the correct syntax to create a HashMap in Java?
+A) Map m = new HashMap();
+B) HashMap m = new Map();
+C) Map m = new Map();
+D) HashMap m = new HashMap();
+D
+
