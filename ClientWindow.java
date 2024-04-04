@@ -1,15 +1,11 @@
 package nwp;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.TimerTask;
 import java.util.Timer;
-import javax.swing.ButtonGroup;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,12 +22,14 @@ class ClientWindow implements ActionListener {
     private JRadioButton answerOptions[];
     private ButtonGroup optionsGroup;
     private TimerTask countdownTask;
-    private String hostAddress = "127.0.0.1";
+    private String hostAddress; // Removed hardcoded address
     private int hostPort = 12345;
     private static boolean readyToAnswer = false;
     private Socket participantSocket;
 
     public ClientWindow() {
+        // Prompt for IP address
+        hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
         setupUserInterface();
         try {
             participantSocket = new Socket(hostAddress, hostPort);
