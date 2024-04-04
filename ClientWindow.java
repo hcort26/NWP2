@@ -74,7 +74,7 @@ class ClientWindow implements ActionListener {
         requestButton.addActionListener(this);
         mainFrame.add(requestButton);
 
-        answerButton = new JButton("Send Answer");
+        answerButton = new JButton("Enter");
         answerButton.setBounds(200, 300, 100, 20);
         answerButton.addActionListener(this);
         answerButton.setEnabled(readyToAnswer);
@@ -105,7 +105,7 @@ class ClientWindow implements ActionListener {
                     ex.printStackTrace();
                 }
                 break;
-            case "Send Answer":
+            case "Enter":
                 String selectedOption = null;
                 for (JRadioButton option : answerOptions) {
                     if (option.isSelected()) {
@@ -144,6 +144,8 @@ class ClientWindow implements ActionListener {
                 requestButton.setForeground(color);
             }
         } else if (msg.equals("NAK")) {
+            Color color = new Color(250,0,0);
+            requestButton.setForeground(color);
             System.out.println("NAK received");
         } else if (msg.startsWith("correct")) {
             String scoreUpdate = msg.split(" ")[1];
@@ -151,8 +153,6 @@ class ClientWindow implements ActionListener {
             answerButton.setEnabled(false);
             for (JRadioButton option : answerOptions) {
                 option.setEnabled(false);
-                Color color = new Color(250,0,0);
-                requestButton.setForeground(color);
             }
             optionsGroup.clearSelection();
             pointsLabel.setText("Points: " + scoreUpdate);
