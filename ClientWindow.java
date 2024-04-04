@@ -69,7 +69,7 @@ class ClientWindow implements ActionListener {
         pointsLabel.setBounds(50, 250, 100, 20);
         mainFrame.add(pointsLabel);
 
-        requestButton = new JButton("Buzz");
+        requestButton = new JButton("Poll");
         requestButton.setBounds(10, 300, 100, 20);
         requestButton.addActionListener(this);
         mainFrame.add(requestButton);
@@ -92,10 +92,10 @@ class ClientWindow implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         switch (command) {
-            case "Buzz":
+            case "Poll":
                 try {
                     if (!readyToAnswer) {
-                        byte[] buf = "BuzzRequest".getBytes();
+                        byte[] buf = "PollRequest".getBytes();
                         InetAddress address = InetAddress.getByName(hostAddress);
                         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, hostPort);
                         DatagramSocket ds = new DatagramSocket();
