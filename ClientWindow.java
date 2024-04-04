@@ -1,15 +1,11 @@
 package nwp;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.TimerTask;
 import java.util.Timer;
-import javax.swing.ButtonGroup;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -20,23 +16,29 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 class ClientWindow implements ActionListener {
-	
     private JFrame mainFrame;
     private JLabel questionLabel, messageLabel, timerLabel, pointsLabel;
     private JButton requestButton, answerButton;
     private JRadioButton answerOptions[];
     private ButtonGroup optionsGroup;
     private TimerTask countdownTask;
-    
-    private String hostAddress = "10.111.145.65";
+    private String hostAddress;
     private int hostPort = 12345;
-    
     private static boolean readyToAnswer = false;
     private Socket participantSocket;
 
     public ClientWindow() {
-    	
+        hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
+        
+        // Check if the hostAddress is null or empty
+        if (hostAddress == null || hostAddress.isEmpty()) {
+            // Handle the case where the user clicked cancel or closed the dialog
+            System.out.println("No IP address entered. Exiting...");
+            return; // Exit the constructor (and possibly the application)
+        }
+
         setupUserInterface();
+
         try {
             participantSocket = new Socket(hostAddress, hostPort);
             System.out.println("Connected to quiz host.");
@@ -46,6 +48,8 @@ class ClientWindow implements ActionListener {
             e.printStackTrace();
         }
     }
+
+    // R
 
     private void setupUserInterface() {
     	
