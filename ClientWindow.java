@@ -140,21 +140,12 @@ class ClientWindow implements ActionListener {
             answerButton.setEnabled(true);
             for (JRadioButton option : answerOptions) {
                 option.setEnabled(true);
-            }
-        } else if (msg.equals("NAK")) {
-            System.out.println("Negative ACK received");
-        } else if (msg.startsWith("correct")) {
-            String scoreUpdate = msg.split(" ")[1];
-            readyToAnswer = false;
-            answerButton.setEnabled(false);
-            for (JRadioButton option : answerOptions) {
-                option.setEnabled(false);
                 Color color = new Color(0,250,0);
                 requestButton.setForeground(color);
             }
-            optionsGroup.clearSelection();
-            pointsLabel.setText("Points: " + scoreUpdate);
-        } else if (msg.startsWith("incorrect")) {
+        } else if (msg.equals("NAK")) {
+            System.out.println("NAK received");
+        } else if (msg.startsWith("correct")) {
             String scoreUpdate = msg.split(" ")[1];
             readyToAnswer = false;
             answerButton.setEnabled(false);
@@ -165,12 +156,21 @@ class ClientWindow implements ActionListener {
             }
             optionsGroup.clearSelection();
             pointsLabel.setText("Points: " + scoreUpdate);
+        } else if (msg.startsWith("incorrect")) {
+            String scoreUpdate = msg.split(" ")[1];
+            readyToAnswer = false;
+            answerButton.setEnabled(false);
+            for (JRadioButton option : answerOptions) {
+                option.setEnabled(false);
+            }
+            optionsGroup.clearSelection();
+            pointsLabel.setText("Points: " + scoreUpdate);
         } else if (msg.startsWith("points")) {
             String scoreUpdate = msg.split(": ")[1];
             pointsLabel.setText("Points: " + scoreUpdate);
         } else if (msg.startsWith("END")) {
             questionLabel.setForeground(Color.red);
-            questionLabel.setText("The game has ended! Please see your final score below.");
+            questionLabel.setText("The game has ended! Please see your final scores below.");
             requestButton.setEnabled(false);
             countdownTask.cancel();
         } else if (msg.startsWith("Time")) {
