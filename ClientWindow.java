@@ -69,7 +69,7 @@ class ClientWindow implements ActionListener {
         pointsLabel.setBounds(50, 250, 100, 20);
         mainFrame.add(pointsLabel);
 
-        requestButton = new JButton("Signal");
+        requestButton = new JButton("Buzz");
         requestButton.setBounds(10, 300, 100, 20);
         requestButton.addActionListener(this);
         mainFrame.add(requestButton);
@@ -92,10 +92,10 @@ class ClientWindow implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         switch (command) {
-            case "Signal":
+            case "Buzz":
                 try {
                     if (!readyToAnswer) {
-                        byte[] buf = "signalRequest".getBytes();
+                        byte[] buf = "BuzzRequest".getBytes();
                         InetAddress address = InetAddress.getByName(hostAddress);
                         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, hostPort);
                         DatagramSocket ds = new DatagramSocket();
@@ -135,14 +135,14 @@ class ClientWindow implements ActionListener {
             parseQuestion(msg.substring(1));
             requestButton.setEnabled(true);
         } else if (msg.equals("ACK")) {
-            System.out.println("Acknowledgement received");
+            System.out.println("ACK received");
             readyToAnswer = true;
             answerButton.setEnabled(true);
             for (JRadioButton option : answerOptions) {
                 option.setEnabled(true);
             }
         } else if (msg.equals("NAK")) {
-            System.out.println("Negative Acknowledgement received");
+            System.out.println("Negative ACK received");
         } else if (msg.startsWith("correct")) {
             String scoreUpdate = msg.split(" ")[1];
             readyToAnswer = false;
