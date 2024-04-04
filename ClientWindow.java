@@ -1,11 +1,15 @@
 package nwp;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.TimerTask;
 import java.util.Timer;
+import javax.swing.ButtonGroup;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,20 +20,22 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 class ClientWindow implements ActionListener {
+	
     private JFrame mainFrame;
     private JLabel questionLabel, messageLabel, timerLabel, pointsLabel;
     private JButton requestButton, answerButton;
     private JRadioButton answerOptions[];
     private ButtonGroup optionsGroup;
     private TimerTask countdownTask;
-    private String hostAddress; // Removed hardcoded address
+    
+    private String hostAddress = "10.111.145.65";
     private int hostPort = 12345;
+    
     private static boolean readyToAnswer = false;
     private Socket participantSocket;
 
     public ClientWindow() {
-        // Prompt for IP address
-        hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
+    	
         setupUserInterface();
         try {
             participantSocket = new Socket(hostAddress, hostPort);
@@ -42,6 +48,7 @@ class ClientWindow implements ActionListener {
     }
 
     private void setupUserInterface() {
+    	
         mainFrame = new JFrame("Quiz Time!");
 
         questionLabel = new JLabel("Q1. Example question");
@@ -69,11 +76,11 @@ class ClientWindow implements ActionListener {
         quizTimer.scheduleAtFixedRate(countdownTask, 0, 1000);
         mainFrame.add(timerLabel);
 
-        pointsLabel = new JLabel("Points");
+        pointsLabel = new JLabel("Score: ");
         pointsLabel.setBounds(50, 250, 100, 20);
         mainFrame.add(pointsLabel);
 
-        requestButton = new JButton("Buzz");
+        requestButton = new JButton("Poll");
         requestButton.setBounds(10, 300, 100, 20);
         requestButton.addActionListener(this);
         mainFrame.add(requestButton);
@@ -92,40 +99,8 @@ class ClientWindow implements ActionListener {
         mainFrame.setResizable(false);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-        switch (command) {
-            case "Buzz":
-                try {
-                    if (!readyToAnswer) {
-                        byte[] buf = "request".getBytes();
-                        InetAddress address = InetAddress.getByName(hostAddress);
-                        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, hostPort);
-                        DatagramSocket ds = new DatagramSocket();
-                        ds.send(packet);
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                break;
-            case "Submit":
-                String selectedOption = null;
-                for (JRadioButton option : answerOptions) {
-                    if (option.isSelected()) {
-                        selectedOption = option.getText();
-                        break;
-                    }
-                }
-                if (selectedOption != null) {
-                    System.out.println("Chosen Answer: " + selectedOption);
-                    submitAnswer(selectedOption);
-                }
-                break;
-        }
-    }
-
     private void listenToSocket(Socket sock) throws IOException {
+    	
         BufferedReader socketReader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
         String receivedData;
         while ((receivedData = socketReader.readLine()) != null) {
@@ -135,6 +110,7 @@ class ClientWindow implements ActionListener {
     }
 
     private void handleSocketMessage(String msg) {
+    	
         if (msg.startsWith("Q")) {
             parseQuestion(msg.substring(1));
             requestButton.setEnabled(true);
@@ -183,6 +159,40 @@ class ClientWindow implements ActionListener {
             resetCountdownTimer(newTime);
         }
     }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+    	
+        String command = e.getActionCommand();
+        switch (command) {
+            case "Buzz":
+                try {
+                    if (!readyToAnswer) {
+                        byte[] buf = "request".getBytes();
+                        InetAddress address = InetAddress.getByName(hostAddress);
+                        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, hostPort);
+                        DatagramSocket ds = new DatagramSocket();
+                        ds.send(packet);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                break;
+            case "Submit":
+                String selectedOption = null;
+                for (JRadioButton option : answerOptions) {
+                    if (option.isSelected()) {
+                        selectedOption = option.getText();
+                        break;
+                    }
+                }
+                if (selectedOption != null) {
+                    System.out.println("Chosen Answer: " + selectedOption);
+                    submitAnswer(selectedOption);
+                }
+                break;
+        }
+    }
 
     private void parseQuestion(String questionInfo) {
         String[] parts = questionInfo.split("\\[");
@@ -192,14 +202,14 @@ class ClientWindow implements ActionListener {
         String questionText = questionPart.substring(questionNum.length() + 1).trim();
         updateAnswerOptions(questionNum, questionText, choices);
     }
-
-    private void updateAnswerOptions(String qNum, String qText, String optionsPart) {
-        questionLabel.setText(qNum + ". " + qText);
-
-        String[] optionSet = optionsPart.split(", ");
-        for (int i = 0; i < this.answerOptions.length && i < optionSet.length; i++) {
-            this.answerOptions[i].setText(optionSet[i].trim());
+    
+    private void resetCountdownTimer(int newTime) {
+        if (countdownTask != null) {
+            countdownTask.cancel();
         }
+        countdownTask = new CountdownTimer(newTime);
+        Timer resetTimer = new Timer();
+        resetTimer.scheduleAtFixedRate(countdownTask, 0, 1000);
     }
 
     private void submitAnswer(String answer) {
@@ -210,14 +220,15 @@ class ClientWindow implements ActionListener {
             e.printStackTrace();
         }
     }
+    
 
-    private void resetCountdownTimer(int newTime) {
-        if (countdownTask != null) {
-            countdownTask.cancel();
+    private void updateAnswerOptions(String qNum, String qText, String optionsPart) {
+        questionLabel.setText(qNum + ". " + qText);
+
+        String[] optionSet = optionsPart.split(", ");
+        for (int i = 0; i < this.answerOptions.length && i < optionSet.length; i++) {
+            this.answerOptions[i].setText(optionSet[i].trim());
         }
-        countdownTask = new CountdownTimer(newTime);
-        Timer resetTimer = new Timer();
-        resetTimer.scheduleAtFixedRate(countdownTask, 0, 1000);
     }
 
     public static void main(String[] args) {
