@@ -149,6 +149,8 @@ class ClientWindow implements ActionListener {
             answerButton.setEnabled(false);
             for (JRadioButton option : answerOptions) {
                 option.setEnabled(false);
+                Color color = new Color(0,250,0);
+                requestButton.SetForground(color);
             }
             optionsGroup.clearSelection();
             pointsLabel.setText("Points: " + scoreUpdate);
@@ -158,6 +160,8 @@ class ClientWindow implements ActionListener {
             answerButton.setEnabled(false);
             for (JRadioButton option : answerOptions) {
                 option.setEnabled(false);
+                Color color = new Color(250,0,0);
+                requestButton.SetForground(color);
             }
             optionsGroup.clearSelection();
             pointsLabel.setText("Points: " + scoreUpdate);
