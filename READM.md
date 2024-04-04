@@ -5,7 +5,7 @@ This project involves the development of a multi-player trivia game that can be 
 
 ## Development Phases
 1. **Phase 1 - Client Application Development:**
-    - Utilization of provided classes (`ClientWindow.java` and `ClientWindowTest.java`) for GUI and event handling.
+    - Utilization of provided classes (`ClientWindow.java`) for GUI and event handling.
     - Implementation of client-side logic using Java Swing for user interactions.
 
 2. **Phase 2 - Server Application Development:**
