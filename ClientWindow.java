@@ -1,11 +1,16 @@
 package nwp;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.TimerTask;
 import java.util.Timer;
+import javax.swing.ButtonGroup;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,19 +21,23 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 class ClientWindow implements ActionListener {
+	
     private JFrame mainFrame;
-    private JLabel questionLabel, messageLabel, timerLabel, pointsLabel;
+    private JLabel questionLabel, timerLabel, pointsLabel;
     private JButton requestButton, answerButton;
     private JRadioButton answerOptions[];
     private ButtonGroup optionsGroup;
     private TimerTask countdownTask;
+    
     private String hostAddress;
     private int hostPort = 12345;
+    
     private static boolean readyToAnswer = false;
     private Socket participantSocket;
 
     public ClientWindow() {
-        hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
+    	
+    	hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
         
         // Check if the hostAddress is null or empty
         if (hostAddress == null || hostAddress.isEmpty()) {
@@ -36,9 +45,8 @@ class ClientWindow implements ActionListener {
             System.out.println("No IP address entered. Exiting...");
             return; // Exit the constructor (and possibly the application)
         }
-
+    	
         setupUserInterface();
-
         try {
             participantSocket = new Socket(hostAddress, hostPort);
             System.out.println("Connected to quiz host.");
@@ -49,18 +57,13 @@ class ClientWindow implements ActionListener {
         }
     }
 
-    // R
-
     private void setupUserInterface() {
     	
-        mainFrame = new JFrame("Quiz Time!");
+        mainFrame = new JFrame("Coding Trivia");
 
-        questionLabel = new JLabel("Q1. Example question");
-        messageLabel = new JLabel("Awaiting host...");
+        questionLabel = new JLabel("Waiting for host...");
         questionLabel.setBounds(10, 5, 600, 100);
-        messageLabel.setBounds(400, 210, 350, 100);
         mainFrame.add(questionLabel);
-        mainFrame.add(messageLabel);
 
         answerOptions = new JRadioButton[4];
         optionsGroup = new ButtonGroup();
@@ -95,8 +98,8 @@ class ClientWindow implements ActionListener {
         answerButton.setEnabled(readyToAnswer);
         mainFrame.add(answerButton);
 
-        mainFrame.setSize(700, 400);
-        mainFrame.setBounds(50, 50, 700, 400);
+        mainFrame.setSize(500, 400);
+        mainFrame.setBounds(50, 50, 500, 400);
         mainFrame.setLayout(null);
         mainFrame.setVisible(true);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -125,10 +128,8 @@ class ClientWindow implements ActionListener {
             for (JRadioButton option : answerOptions) {
                 option.setEnabled(true);
             }
-            messageLabel.setText("Your turn to answer!");
         } else if (msg.equals("NAK")) {
             System.out.println("NAK received");
-            messageLabel.setText("Too slow!");
         } else if (msg.startsWith("correct")) {
             String scoreUpdate = msg.split(" ")[1];
             readyToAnswer = false;
@@ -137,7 +138,6 @@ class ClientWindow implements ActionListener {
                 option.setEnabled(false);
             }
             optionsGroup.clearSelection();
-            messageLabel.setText("Correct! +10 Points");
             pointsLabel.setText("Points: " + scoreUpdate);
         } else if (msg.startsWith("incorrect")) {
             String scoreUpdate = msg.split(" ")[1];
@@ -147,7 +147,6 @@ class ClientWindow implements ActionListener {
                 option.setEnabled(false);
             }
             optionsGroup.clearSelection();
-            messageLabel.setText("Incorrect! -10 Points");
             pointsLabel.setText("Points: " + scoreUpdate);
         } else if (msg.startsWith("points")) {
             String scoreUpdate = msg.split(": ")[1];
@@ -156,7 +155,6 @@ class ClientWindow implements ActionListener {
             questionLabel.setForeground(Color.red);
             questionLabel.setText("Game over! Check your final score below.");
             requestButton.setEnabled(false);
-            messageLabel.setText("");
             countdownTask.cancel();
         } else if (msg.startsWith("Time")) {
             int newTime = Integer.parseInt(msg.split(" ")[1]);
@@ -260,10 +258,8 @@ class ClientWindow implements ActionListener {
                 optionsGroup.clearSelection();
                 if (readyToAnswer) {
                     submitAnswer("Points 20");
-                    messageLabel.setText("Ran out of time! -20 Points");
                 } else {
                     submitAnswer("Timeout");
-                    messageLabel.setText("Timeout!");
                     countdownTask.cancel();
                 }
                 readyToAnswer = false;
