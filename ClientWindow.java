@@ -1,30 +1,19 @@
 package nwp;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JRadioButton;
-import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
+import java.net.*;
 import java.util.TimerTask;
 import java.util.Timer;
-import javax.swing.ButtonGroup;
-import java.io.PrintWriter;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.net.Socket;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 
 class ClientWindow implements ActionListener {
     private JFrame mainFrame;
     private JLabel questionLabel, timerLabel, pointsLabel;
     private JButton requestButton, answerButton;
-    private JRadioButton answerOptions[];
+    private JRadioButton[] answerOptions;
     private ButtonGroup optionsGroup;
     private TimerTask countdownTask;
     private String hostAddress;
@@ -33,19 +22,18 @@ class ClientWindow implements ActionListener {
     private Socket participantSocket;
 
     public ClientWindow() {
-    	
-hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
-        
+        hostAddress = JOptionPane.showInputDialog("Please input the host's IP address:");
+
         if (hostAddress == null || hostAddress.isEmpty()) {
-            System.out.println("No IP address entered. Exiting...");
-            return; 
+            System.out.println("IP address not provided. Terminating application...");
+            return;
         }
-    	
+
         setupUserInterface();
         try {
             participantSocket = new Socket(hostAddress, hostPort);
-            System.out.println("Connected to quiz host.");
-            mainFrame.setTitle("Connected to " + hostAddress);
+            System.out.println("Successfully connected to the quiz server.");
+            mainFrame.setTitle("Successfully Established Connection to " + hostAddress);
             listenToSocket(participantSocket);
         } catch (IOException e) {
             e.printStackTrace();
@@ -53,12 +41,12 @@ hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
     }
 
     private void setupUserInterface() {
-        mainFrame = new JFrame("Coding Triva");
+        mainFrame = new JFrame("Code Quiz Game");
 
-        questionLabel = new JLabel("Q1. Example question");
+        questionLabel = new JLabel("Question 1: Sample Query");
         questionLabel.setBounds(10, 5, 600, 100);
         mainFrame.add(questionLabel);
-        
+
         answerOptions = new JRadioButton[4];
         optionsGroup = new ButtonGroup();
         for (int i = 0; i < answerOptions.length; i++) {
@@ -70,23 +58,23 @@ hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
             optionsGroup.add(answerOptions[i]);
         }
 
-        timerLabel = new JLabel("Time Left"); 
+        timerLabel = new JLabel("Remaining Time");
         timerLabel.setBounds(250, 250, 100, 20);
-        countdownTask = new CountdownTimer(30); 
-        Timer quizTimer = new Timer(); 
+        countdownTask = new CountdownTimer(30);
+        Timer quizTimer = new Timer();
         quizTimer.scheduleAtFixedRate(countdownTask, 0, 1000);
         mainFrame.add(timerLabel);
 
-        pointsLabel = new JLabel("Points");
+        pointsLabel = new JLabel("Your Points");
         pointsLabel.setBounds(50, 250, 100, 20);
         mainFrame.add(pointsLabel);
 
-        requestButton = new JButton("Buzz");
+        requestButton = new JButton("Signal");
         requestButton.setBounds(10, 300, 100, 20);
         requestButton.addActionListener(this);
         mainFrame.add(requestButton);
 
-        answerButton = new JButton("Submit");
+        answerButton = new JButton("Send Answer");
         answerButton.setBounds(200, 300, 100, 20);
         answerButton.addActionListener(this);
         answerButton.setEnabled(readyToAnswer);
@@ -104,10 +92,10 @@ hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         switch (command) {
-            case "Buzz":
+            case "Signal":
                 try {
                     if (!readyToAnswer) {
-                        byte[] buf = "request".getBytes();
+                        byte[] buf = "signalRequest".getBytes();
                         InetAddress address = InetAddress.getByName(hostAddress);
                         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, hostPort);
                         DatagramSocket ds = new DatagramSocket();
@@ -117,7 +105,7 @@ hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
                     ex.printStackTrace();
                 }
                 break;
-            case "Submit":
+            case "Send Answer":
                 String selectedOption = null;
                 for (JRadioButton option : answerOptions) {
                     if (option.isSelected()) {
@@ -126,7 +114,7 @@ hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
                     }
                 }
                 if (selectedOption != null) {
-                    System.out.println("Chosen Answer: " + selectedOption);
+                    System.out.println("Selected Answer: " + selectedOption);
                     submitAnswer(selectedOption);
                 }
                 break;
@@ -147,14 +135,14 @@ hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
             parseQuestion(msg.substring(1));
             requestButton.setEnabled(true);
         } else if (msg.equals("ACK")) {
-            System.out.println("ACK received");
+            System.out.println("Acknowledgement received");
             readyToAnswer = true;
             answerButton.setEnabled(true);
             for (JRadioButton option : answerOptions) {
                 option.setEnabled(true);
             }
         } else if (msg.equals("NAK")) {
-            System.out.println("NAK received");
+            System.out.println("Negative Acknowledgement received");
         } else if (msg.startsWith("correct")) {
             String scoreUpdate = msg.split(" ")[1];
             readyToAnswer = false;
@@ -178,7 +166,7 @@ hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
             pointsLabel.setText("Points: " + scoreUpdate);
         } else if (msg.startsWith("END")) {
             questionLabel.setForeground(Color.red);
-            questionLabel.setText("Game over! Check your final score below.");
+            questionLabel.setText("The game has ended! Please see your final score below.");
             requestButton.setEnabled(false);
             countdownTask.cancel();
         } else if (msg.startsWith("Time")) {
@@ -237,7 +225,7 @@ hostAddress = JOptionPane.showInputDialog("Enter the IP address of the host:");
         @Override
         public void run() {
             if (timeLeft < 0) {
-                timerLabel.setText("Time's up!");
+                timerLabel.setText("Out of time!");
                 mainFrame.repaint();
                 this.cancel();
                 answerButton.setEnabled(false);
