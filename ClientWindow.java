@@ -16,8 +16,10 @@ class ClientWindow implements ActionListener {
     private JRadioButton[] answerOptions;
     private ButtonGroup optionsGroup;
     private TimerTask countdownTask;
+    
     private String hostAddress;
     private int hostPort = 12345;
+    
     private static boolean readyToAnswer = false;
     private Socket participantSocket;
 
