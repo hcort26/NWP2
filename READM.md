@@ -24,14 +24,12 @@ This project involves the development of a multi-player trivia game that can be 
 3. UDP for quick, non-guaranteed communication, primarily for buzzer-like interactions.
 4. Queue implementation for managing message orders.
 5. Server mechanisms for synchronization, deadlock prevention, and handling out-of-order messages.
-6. A "Kill-Switch" for terminating clients under specific conditions.
-7. A repository of 20 trivia questions and options.
-8. Score tracking and final winner announcement.
+6. A repository of 20 trivia questions and options.
+7. Score tracking and final winner announcement.
 
 ## Requirements
 1. **Client-Server Interaction:**
     - Clients receive questions over TCP.
-    - Clients use a static identifier (`ClientID`) for communication.
     - Polling, answering, and scoring mechanisms with respective TCP and UDP communications.
 
 2. **Server Responsiveness and Control:**
