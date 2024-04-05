@@ -19,7 +19,7 @@ class QuizServer {
     public static int countTimeouts = 0;
     private static boolean displayedWinners = false;
     private static int currentQuestion = 0;
-    private static boolean acceptingBuzzes = true;
+    private static boolean acceptingPolls = true;
     
     private static List<QuestionAndAnswer> questionList;
     private static List<ParticipantConnection> participants = new ArrayList<>();
@@ -38,8 +38,8 @@ class QuizServer {
         try (ServerSocket serverSock = new ServerSocket(serverPort)) {
             System.out.println("Server running. Awaiting connections...");
 
-            BuzzListener buzzListener = new BuzzListener();
-            buzzListener.start();
+            PoleListener poleListener = new PoleListener();
+            poleListener.start();
 
             while (true) {
                 Socket clientSock = serverSock.accept();
@@ -63,13 +63,13 @@ class QuizServer {
         }
     }
 
-    private static class BuzzListener extends Thread {
+    private static class PoleListener extends Thread {
     	
     	private boolean active;
         private byte[] buffer = new byte[256];
         private DatagramSocket ds;
 
-        public BuzzListener() throws SocketException {
+        public PoleListener() throws SocketException {
             this.ds = new DatagramSocket(serverPort);
         }
 
@@ -83,8 +83,8 @@ class QuizServer {
                     InetAddress address = packet.getAddress();
                     int port = packet.getPort();
                     System.out.println("Received: " + received + " from: " + address.getHostAddress() + ":" + port);
-                    if (acceptingBuzzes) {
-                        acceptingBuzzes = false;
+                    if (acceptingPolls) {
+                        acceptingPolls = false;
                         if (participants.isEmpty()) {
                             System.out.println("No clients connected.");
                         } else {
@@ -96,7 +96,7 @@ class QuizServer {
                                 }
                             }
                             if (matchingParticipant != null) {
-                                System.out.println("Buzz from " + address.getHostAddress());
+                                System.out.println("Poll from " + address.getHostAddress());
                                 try {
                                 	
                                 	setParticipantTimer("10", matchingParticipant);
@@ -182,7 +182,7 @@ class QuizServer {
     	
         countTimeouts = 0;
         triggerTimersForAllParticipants("15");
-        acceptingBuzzes = true;
+        acceptingPolls = true;
         currentQuestion++;
         List<ParticipantConnection> safeList = new ArrayList<>(participants);
 
